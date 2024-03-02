@@ -275,8 +275,8 @@
          *  即：非守护线程结束，守护进程就不需要再执行下去了
          */
 
-   MyThread t1 = new MyThread();
-   MyThread t2 = new MyThread();
+   MyThread1 t1 = new MyThread1();
+   MyThread2 t2 = new MyThread2();
 
    t1.setName("非守护线程");
    t2.setName("守护线程");
