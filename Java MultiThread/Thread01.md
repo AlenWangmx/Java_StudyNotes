@@ -167,7 +167,7 @@
 | void setName(String name) | 设置线程的名字（构造方法也可以设置名字） |
 | static Thread currentThread()     | 获取当前线程的对象     |
 | static void sleep(long time)     | 让线程休眠指定的时间，单位为毫秒     |
-| setPriority(int newporiority)     |  设置线程的优先级     |
+| setPriority(int newPoriority)     |  设置线程的优先级     |
 | final int getPriority()     | 获取线程的优先级     |
 | final void setDaemon(boolean on)     | 设置为守护线程     |
 | public static void yield()     | 出让线程/礼让线程     |
@@ -205,7 +205,7 @@
 
 #### 1.线程优先级相关方法
 
-* 1. setPriority(int newporiority)，获取线程优先级
+* 1. getPriority()，获取线程优先级
 
    ```Java
    //1.创建实现类，实现接口Runnable
@@ -230,7 +230,7 @@
    System.out.println(t2.getPriority());
    ```
 
-* 2. final int getPriority()，设置线程优先级
+* 2. setPriority(int newPriority)，设置线程优先级
 
    ```Java
    //设置线程优先级
