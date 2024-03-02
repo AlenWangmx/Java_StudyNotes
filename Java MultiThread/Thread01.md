@@ -236,4 +236,55 @@
    //设置线程优先级
    t1.setPriority(1);
    t2.setPriority(10);
+
+   t1.start();
+   t2.start();
    ```
+
+* 执行结果：t2线程会明显早于t1线程完成执行
+
+#### 2.守护线程
+
+* setDaemon(boolean on)，设置为守护线程
+
+   ```Java
+   //创建两个不同的子线程类，继承Thread
+   public class MyThread1 extends Thread{
+    @Override
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(getName()+"@"+i);
+         }
+      }
+   }
+
+   public class MyThread2 extends Thread{
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(getName()+"@"+i);
+         }
+      } 
+   }
+   ```
+
+   ```Java
+    /**
+         *  final void setDaemon(boolean on)    设置为守护线程
+         *  细节：当其它的非守护线程执行完毕之后，守护线程会陆续结束，不再继续执行
+         *  即：非守护线程结束，守护进程就不需要再执行下去了
+         */
+
+   MyThread t1 = new MyThread();
+   MyThread t2 = new MyThread();
+
+   t1.setName("非守护线程");
+   t2.setName("守护线程");
+
+   t2.setDaemon(true); //线程t2设置为守护线程
+
+   t1.start();
+   t2.start();
+   ```
+
+* 执行结果：线程t1执行完10次循环输出后，线程t2结束执行，不会完成100次循环输出任务
