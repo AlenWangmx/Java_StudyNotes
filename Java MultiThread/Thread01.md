@@ -225,9 +225,9 @@
    Thread t1 = new Thread(mr,"线程0");
    Thread t2 = new Thread(mr,"线程1");
 
-   //获取线程权限
-   t1.getPriority();
-   t1.getPriority();
+   //获取线程优先级，并在终端打印出来
+   System.out.println(t1.getPriority());
+   System.out.println(t2.getPriority());
    ```
 
 * 2. final int getPriority()，设置线程优先级
