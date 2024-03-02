@@ -156,3 +156,84 @@
 ### （四）三种方式对比
 
 ![1709282044707](image/Thread01/1709282044707.png)
+
+## 三、Thread类常见成员方法
+
+### （一）成员方法
+
+| 方法名称 | 说明 |
+| ---- | ---- |
+| String getName() | 返回此线程的名称 |
+| void setName(String name) | 设置线程的名字（构造方法也可以设置名字） |
+| static Thread currentThread()     | 获取当前线程的对象     |
+| static void sleep(long time)     | 让线程休眠指定的时间，单位为毫秒     |
+| setPriority(int newporiority)     |  设置线程的优先级     |
+| final int getPriority()     | 获取线程的优先级     |
+| final void setDaemon(boolean on)     | 设置为守护线程     |
+| public static void yield()     | 出让线程/礼让线程     |
+| public static void join()     | 插入线程/插队线程     |
+
+#### 1.前4个方法细节
+
+   ```Java
+   /**
+         String getName()            返回线程的名字
+
+         void setName(String name)   设置线程的名字（构造方法也可以）
+         细节：1、如果我们没有给线程设置名字，线程也是有默认名字的
+             格式：Thread-X（X序号，从0开始）
+             2、如果我们要给线程设置名字，可以用set设置，也可以用构造方法设置
+
+            static Thread currentThread()   获取当前线程的对象
+         细节：当JVM虚拟机启动之后，会自动启动多条线程
+             其中有一条线程就叫main线程
+             它的作用就是去调用main方法，并执行里面的代码
+             在以前，我们写的所有的代码，其实都是运行在main线程当中
+
+         static void sleep(long time)    让线程休眠指定时间，单位为毫秒
+         细节：1、哪条线程执行到这个方法，那么哪条线程就会在这里停留对应的时间
+               2、方法的参数：就表示睡眠的时间，单位毫秒
+               3、当时间到了之后，线程会自动的醒来，继续执行下面的代码
+         */
+   ```
+
+### （二）线程优先级
+
+* 抢占式调度，优先级越大，线程抢到CPU资源的概率越大
+* Java中，线程优先级分为10级，最小为1，最大为10
+* 如果没有设置线程优先级，那么默认等级为5
+
+#### 1.线程优先级相关方法
+
+* 1. setPriority(int newporiority)，获取线程优先级
+
+   ```Java
+   //1.创建实现类，实现接口Runnable
+   public class MyRunnable implements Runnable{
+      @Override
+      public void run() {
+         //...
+      }
+   }
+   ```
+
+   ```Java
+   //2.创建线程要执行的参数对象
+   MyRunnable mr = new MyRunnable();
+
+   //3.创建线程对象
+   Thread t1 = new Thread(mr,"线程0");
+   Thread t2 = new Thread(mr,"线程1");
+
+   //获取线程权限
+   t1.getPriority();
+   t1.getPriority();
+   ```
+
+* 2. final int getPriority()，设置线程优先级
+
+   ```Java
+   //设置线程优先级
+   t1.setPriority(1);
+   t2.setPriority(10);
+   ```
