@@ -1,4 +1,4 @@
-# 多线程
+# Java-多线程
 
 ## 一、什么是线程（Thread）
 
@@ -288,3 +288,54 @@
    ```
 
 * 执行结果：线程t1执行完10次循环输出后，线程t2结束执行，不会完成100次循环输出任务
+
+#### 3.礼让线程（了解即可）
+
+* yield()，设置礼让线程（Tip：此方法为static方法）
+
+   ```java
+   //创建子线程类MyThread
+   public class MyThread extends Thread{
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            System.out.println(getName()+"@"+i);
+            //在重写的run方法中调用，每执行一次循环就出让CPU执行权
+            Thread.yield();   //将此线程设置为礼让线程
+         }
+      }
+   }
+   ```
+
+   ```Java
+   //创建线程对象
+   MyThread t1 = new MyThread();
+   MyThread t2 = new MyThread();
+
+   t1.start;
+   t2.start;
+   ```
+
+* 执行结果：t1，t2线程【尽可能】均匀地交替执行完毕，此方法使用场景极少且作用不大，了解即可
+
+#### 4.插队线程（了解即可）
+
+* join()，设置为插队线程（Tip：此方法为静态方法）
+
+   ```java
+   //创建子线程类MyThread（与上例相同，在此省略）
+   //...
+
+   //main类中
+   Mythread t =new Mythread();
+   t.start();
+   
+   t.join(); //表示把t这个线程插入到当前线程（main线程）之前
+
+   //执行在main线程当中的代码
+   for(int i = 0; i < 10 ; i++){
+      System.out.println("main线程"+i);
+   }
+   ```
+
+* 执行结果：线程t执行完毕，main线程才会执行
