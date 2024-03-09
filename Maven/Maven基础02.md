@@ -92,7 +92,7 @@ Maven继承是指在Maven的项目中，让一个项目从另一个项目中继�
 
 #### 2、继承作用
 
-在父工程中统一管理项目中的依赖信息
+在父工程中统一管理项目中的依赖信息，可以将一个大型项目分为父工程和子工程,其中父工程的唯一作用就是定义所有子模块工程的资源版本（父工程不编写代码，只编辑pom.xml文件）
 
 * 它的背景是：
   * 对一个比较大的项目进行了模块拆分
@@ -106,4 +106,104 @@ Maven继承是指在Maven的项目中，让一个项目从另一个项目中继�
 
 #### 3、继承语法
 
+Tip：**【子工程需要创建在父工程目录下】**，父工程不需要编写代码，所以可以删除父工程的src文件，只保留pom.xml文件
+
 * 父工程
+
+  ```xml
+  <groupId>org.alanw.maven</groupId>
+  <artifactId>maven_parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <!--由于父工程不需要参与打包，因此打包方式为pom-->
+  <packaging>pom</packaging>
+  ```
+
+* 子工程
+
+  ```xml
+  <!--父工程坐标-->
+    <parent>
+      <groupId>org.alanw.maven</groupId>
+      <artifactId>maven_parent</artifactId>
+      <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <!--只显示artifactId,因为groupId与version父工程一致时可以省略-->
+    <artifactId>maven_son</artifactId>
+  ```
+
+#### 4、\<dependencyManagment>标签
+
+父工程中，将\<dependencies>标签写入\<dependencyManagment>标签，子工程【不会直接继承】父工程的依赖，需要进行手动配置才能继承，这样可以对需要用到的依赖进行管理
+
+```xml
+<dependencyManagement>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.2.8</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+```
+
+子工程中需要继承父工程中的依赖（如servlet）时，需要进行以下配置
+
+```xml
+<dependencies>
+    <!-- https://mvnrepository.com/artifact/javax.servlet/javax.servlet-api -->
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>javax.servlet-api</artifactId>
+        <!--不需要配置版本号和依赖范围-->
+    </dependency>
+</dependencies>
+```
+
+### （二）Maven工程聚合关系
+
+#### 1、聚合概念
+
+Maven聚合是指将多个项目组织到一个父级目录中，以便一起构建和管理的机制。聚合可以帮助我们更好地管理一组相关的子项目，同时简化它们的构建和部署过程
+
+#### 2、聚合作用
+
+* 管理多个子项目：通过聚合，可以将多个子项目组织在一起，方便管理和维护
+* 构建和发布一组相关的项目：通过聚合，可以在一个命令中构建和发布多个相关的项目，简化了部署和维护工作
+* 优化构建顺序：通过聚合，可以对多个项目进行顺序控制，避免出现构建依赖混乱导致构建失败的情况
+* 统一管理依赖项：通过聚合，可以在父项目中管理公共依赖和插件，避免重复定义
+
+#### 3、聚合语法
+
+* 父项目中包含子项目列表，当父工程进行测试、打包等生命周期时，子工程列表中的子工程也会一并执行
+
+  ```xml
+  <groupId>org.alanw.maven</groupId>
+  <artifactId>maven_parent</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <!--由于父工程不需要参与打包，因此打包方式为pom-->
+  <packaging>pom</packaging>
+
+  <!--子项目列表-->
+  <modules>
+    <module>maven_son</module>
+    <module>.../...子工程路径</module>
+  </modules>
+
+  ```
