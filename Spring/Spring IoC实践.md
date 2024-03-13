@@ -263,17 +263,184 @@
 
 ### 2.4 实验四：高级特性：组件（Bean）作用域和周期方法配置
 
-* 组件周期方法设置
-  * 我们可以在组件类中定义方法，然后当IoC容器实例化和销毁组件对象的时候进行调用！这两个等待我们称为生命周期方法
-  * 类似于Servlet的init/destory方法，我们可以在周期方法完成初始化和释放资源等工作
+#### 2.4.1 组件周期方法设置
 
-#### 2.4.1 周期方法声明
+* 我们可以在组件类中定义方法，然后当IoC容器实例化和销毁组件对象的时候进行调用！这两个等待我们称为生命周期方法
+* 类似于Servlet的init/destory方法，我们可以在周期方法完成初始化和释放资源等工作
 
-#### 2.4.2 周期方法配置
+    ![Spring IoC实践3](image/Spring%20IoC%E5%AE%9E%E8%B7%B5/1710323562667.png)  
+
+* 周期方法声明
+
+    ```java
+    public class JavaBean {
+        /**
+        * 必须是public 必须是void返回值 必须无参
+        * 初始化方法 ——> 初始化业务逻辑即可
+        */
+        public  void init(){
+            System.out.println("init...");
+        }
+
+        /**
+        * 销毁方法
+        */
+        public void clear(){
+            System.out.println("destory...");
+        }
+    }
+    ```
+
+* 周期方法配置
+
+    ```xml
+    <!--
+    init-method = 初始化方法名
+    destroy-method = 销毁方法名
+    spring ioc容器就会在对应的时间节点回调对应的方法，我们可以在其中写对应的业务即可
+    -->
+    <bean id="javaBean" class="org.alan.ioc_04.JavaBean" init-method="init" destroy-method="clear"/>
+    ```
+
+#### 2.4.2 组件作用域配置
+
+* Bean作用域配置
+  * \<bean>标签声明Bean，只是将Bean的信息配置给SpeingIoC容器
+  * 在IoC容器中，这些\<bean>标签对应的信息转成Spring内部BeanDefinition对象，BeanDefinition对象内，包含定义的信息（id，class，属性等）
+  * 这意味着，BeanDefinition与“类”概念一样，SpringIoC容器可以根据BeanDifinition对象反射创建多个Bean对象实例
+  * 具体创建多少个Bean的实例对象，由Bean的作用域Scope属性指定
+* 作用域可选值
+
+    |取值|含义|创建对象的时机|默认值|
+    |-|-|-|-|
+    |singleton|在IoC容器中，这个bean的对象始终为单实例|IoC容器初始化时|是|
+    |prototype|这个bean在IoC容器中有多个实例|获取bean时|否|
+
+* 如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）
+
+    |取值|含义|创建对象的时机|默认值|
+    |-|-|-|-|
+    |request|请求范围内有效的实例|每次请求|否|
+    |session|会话范围内有效的实例|每次会话|否|
+
+* 作用域配置
+
+    ```xml
+    <!--声明一个组件信息，默认就是单例模式 一个bean -beanDefinition -组件对象
+        prototype模式下getBean一次就会创建一个组件对象-->
+    <bean id="javaBean2" class="org.alan.ioc_04.JavaBean2" scope="prototype"/>
+    ```
 
 ### 2.5 实验四：高级特性：FactoryBean特性和使用
 
+#### 2.5.1 FactoryBean简介
+
+* FactoryBean接口是Spring IoC容器实例化逻辑的可插拔性点。
+* 用于配置复杂的Bean对象，可以将创建过程存储在FactoryBean的getObject方法
+* Factory Bean\<T>接口提供三种方法：
+  * T getObject():
+    * 返回此工厂创建的对象的实例。该返回值会被存储到IoC容器
+  * boolean isSingleton()：
+    * 如果此factoryBean返回单例，则返回true，否则返回false。此方法的默认实现返回true（注意，lombook插件的使用可能影响效果）
+  * Class<?> getObjectType()：
+    * 返回getObject()方法返回的对象类型，如果事先不知道类型，则返回null
+
+    ![Spring IoC实践4](image/Spring%20IoC%E5%AE%9E%E8%B7%B5/1710330539738.png)
+
+#### 2.5.2 FactoryBean使用场景
+
+1. 代理类的创建
+2. 第三方框架整合
+3. 复杂对象实例化等
+
+#### 2.5.3 FactoryBean应用
+
+* 准备factoryBean实现类
+
+    ```java
+    public class JavaBean {
+        private String name;
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
+    //创建工厂类实现FactoryBean<T>接口
+    public class JavaBean_FactoryBean implements FactoryBean<JavaBean> {
+        
+        private  String value;
+
+        @Override
+        public JavaBean getObject() throws Exception {
+            //使用自己的方式实例化
+            JavaBean javaBean = new JavaBean();
+            javaBean.setName(value);
+            return javaBean;
+        }
+
+        @Override
+        public Class<?> getObjectType() {
+            return JavaBean.class;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
+    ```
+
+* 配置FactoryBean实现类
+
+    ```xml
+     <!--
+        id ——> getObject方法返回的对象的标识
+        Class ——> factoryBean标准化工厂类-->
+    <bean id="javaBean" class="org.alan.ioc_05.JavaBean_FactoryBean">
+        <!--此位置的属性：javaBean工厂类配置 而不是getObject方法-->
+        <property name="value" value="alan"/>
+    </bean>
+    ```
+
+* 测试类读取FactoryBean和FactoryBeanObject对象
+
+    ```java
+    /*
+    读取使用FactoryBean工厂配置的组件对象
+     */
+    @Test
+    public void test_05(){
+
+        //1.创建ioc容器 就会进行组件对象的实例化 -> init
+        ClassPathXmlApplicationContext applicationContext
+                = new ClassPathXmlApplicationContext("spring_05.xml");
+
+        //2.读取组件
+        JavaBean javaBean = applicationContext.getBean("javaBean", JavaBean.class);
+        System.out.println("javaBean = "+javaBean);
+
+        //TODO：FactoryBean工厂也会加入到ioc容器 名字 &id
+        Object bean = applicationContext.getBean("&javaBean");
+        System.out.println("bean = "+bean);
+
+        //3.正常结束ioc容器
+        applicationContext.close();
+
+    }
+    ```
+
+#### 2.5.4 FactoryBean和BeanFactory的区别
+
+* **FactoryBean**是个Bean，对FactoryBean而言，这个Bean不是简单的Bean，而是一个能生产或者修饰对象生成的工厂Bean,它的实现与设计模式中的工厂模式和修饰器模式类似
+* **BeanFactory**是个Factory，也就是IOC容器或对象工厂，它是Spring框架的基础，在Spring中，所有的Bean都是由BeanFactory(也就是IOC容器)来进行管理的。
+
 ### 2.6 实验六：基于XML方式整合三层架构组件
+
+详情参考：<https://www.bilibili.com/video/BV1AP411s7D7> P27、28
 
 ## 三、基于注解方式管理Bean
 
