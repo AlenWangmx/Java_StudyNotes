@@ -41,7 +41,7 @@
     List<String> userList = service.getUsernameList();
     ```
 
-## 二、基于XML配置方式组件管理
+## 二、基于XML配置方式组件管理（**此方式基本已淘汰，了解原理即可**）
 
 ### 2.1 实验一：组件（Bean）信息声明配置（IoC）
 
@@ -443,6 +443,214 @@
 详情参考：<https://www.bilibili.com/video/BV1AP411s7D7> P27、28
 
 ## 三、基于注解方式管理Bean
+
+### 实验一：Bean注解标记和扫描（IoC）
+
+#### 3.1.1 注解理解
+
+* 和XML配置文件一样，注解本身并不能执行，注解本身仅仅只是做一个标记，具体的功能是框架检测到注解标记的位置，然后针对这个位置按照注解标记的功能来执行具体的操作
+* 本质上：所有一切的操作都是Java代码来完成的，xml和注解只是告诉框架中的Java代码如何执行
+
+#### 3.1.2 扫描理解
+
+Spring为了知道程序员在哪些地方标记了什么注解，就需要通过扫描的方式，来进行检测。然后根据注解进行后续操作
+
+#### 3.1.3 准备Spring项目和组件
+
+1. 准备项目pom.xml（必需依赖）
+
+    ```xml
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>6.1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.9.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    ```
+
+2. 准备组件类
+
+    ```java
+    //Component组件
+    public class CommonComponent {
+    }
+
+    //Dao组件
+    public class XDao {
+    }
+
+    //Controller组件
+    public class XController {
+    }
+
+    //Service组件
+    public class XService {
+    }
+    ```
+
+#### 3.1.4 组件添加标记注解
+
+1. 组件标记注解和区别
+    * spring提供了以下多个注解，可以直接标注在Java类上，将它们定义成Spring Bean
+
+    |注解|说明|
+    |-|-|
+    |@Component|该注解用于描述Spring中的Bean，它是一个泛化的概念，仅仅表示容器中的一个组件（Bean），并且可以作用在应用的任何层次，例如Service层、Dao层等。使用时只需要将该注解标注在相应类上即可|
+    |@Repositiry|该注解用于将数据访问层（Dao层）的类标识为Spring中的Bean，其功能与@Component相同|
+    |@Service|该注解通常作用在业务层（Service），用于将业务层的类标识为Spring中的Bean，其功能与@Component相同|
+    |@Controller|该注解通常作用在控制层（如SpringMVC的Controller），用于将控制层的类标识为Spring中的Bean，其功能与@Component相同|
+
+   * @Controller、@Service、@Repositiry这三个注解只是在@Compoent注解的基础上起了三个新的名字，其在语法层面没有区别，区分不同的名字只是为了为了便于开发者分辨组件的作用
+2. 使用注解标记
+
+    ```java
+    //Component组件
+    @Component  //<Bean id="component">
+    public class CommonComponent {
+    }
+
+    //Dao组件
+    @Repository
+    public class XDao {
+    }
+
+    //Controller组件
+    @Controller
+    public class XController {
+    }
+
+    //Service组件
+    @Service
+    public class XService {
+    }
+    ```
+
+3. 配置文件确定扫描范围
+
+    * 情况一：基本扫描配置
+
+        ```xml
+        <!--1. 普通配置包扫描
+            base-package 指定ioc容器去哪里包下查找注解类 -> ioc容器
+            一个包或者多个包 org.alan,org.alan.x.x
+            指定包，相当于指定了子包内的所有类-->
+        <context:component-scan base-package="org.alan"/>
+        ```
+
+    * 情况二：指定排除组件
+
+        ```xml
+        <!--2. 指定包，但是排除注解-->
+        <context:component-scan base-package="org.alan">
+            <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/><!--排除了Repository-->
+            <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/><!--排除了Controller-->
+        </context:component-scan>
+        ```
+
+    * 情况三：指定扫描组件
+
+        ```xml
+        <!--3. 指定包，指定包含注解-->
+        <!--use-default-filters="false":指定包的所有注解不生效-->
+        <context:component-scan base-package="org.alan" use-default-filters="false">
+            <!--只扫描包下的注解-->
+            <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+        </context:component-scan>
+        ```
+
+4. 组件BeanName问题
+
+* 使用注解时，每个组件有一个唯一标识，默认情况下首字母小写的类名就是bean的id，例如：ASerivice的bean id为aService
+* 第二种情况，在注解旁使用value属性指定（其中value关键字可省略）：
+
+    ```java
+    @Service(value="aaa")
+    public class XService {
+    }
+
+    ```java
+    @Service("aaa")//同上，效果相同
+    public class XService {
+    }
+    ```
+
+### 实验二：组件（Bean）作用域和周期方法注解
+
+#### 3.2.1 组件周期方法配置
+
+1. 周期方法概念
+    * 我们可以在组件类中定义方法，然后当IoC容器实例化和销毁组件对象的时候进行调用，这两个方法我们称为生命周期方法
+    * 类似于Servlet的init/destory方法，我们可以在周期方法完成初始化和释放资源等工作
+
+2. 周期方法声明
+
+    ```java
+    @Component
+    public class JavaBean {
+        //周期方法命名随意，但必须是 public void 没有形参
+
+        @PostConstruct //注解指定初始化方法
+        public void init(){
+            //初始化逻辑
+        }
+
+        @PreDestroy //注解指定销毁方法
+        public void destroy(){
+            //释放资源逻辑
+        }
+    }
+    ```
+
+#### 3.2.2 组件作用域配置
+
+1. Bean作用域概念
+    * \<bean>标签声明Bean，只是将Bean的信息配置给SpringIoC容器
+    * 在IoC容器中，这些\<bean>标签对应的信息转成Spring内部BeanDefinition对象，Bean Definition对象内，包含定义的信息（id，class，属性等等）
+    * 这意味着，BeanDefinition与“类”概念一样，SpringIoC容器可以根据BeanDifinition对象反射创建多个Bean对象实例
+    * 具体创建多少个Bean的实例对象，由Bean的作用域Scope属性指定
+2. 作用域可选值
+
+    |取值|含义|创建对象的时机|默认值|
+    |-|-|-|-|
+    |singleton|在IoC容器中，这个bean的对象始终为单实例|IoC容器初始化时|是|
+    |prototype|这个bean在IoC容器中有多个实例|获取bean时|否|
+
+    如果是在WebApplicationContext环境下还会有另外两个作用域（但不常用）
+
+    |取值|含义|创建对象的时机|默认值|
+    |-|-|-|-|
+    |request|请求范围内有效的实例|每次请求|否|
+    |session|会话范围内有效的实例|每次会话|否|
+
+3. 作用域配置
+
+    ```java
+    //@Scope(scopeName = ConfigurableBeanFactory.SCOPE_SINGLETON) //单实例
+    @Scope(scopeName = ConfigurableBeanFactory.SCOPE_PROTOTYPE) //多实例
+    @Component
+    public class JavaBean {
+        //周期方法命名随意 public void 没有形参
+        @PostConstruct
+        public void init(){}
+        @PreDestroy
+        public void destroy(){}
+    }
+    ```
+
+### 实验三：Bean属性赋值：引用类型自动装配（DI）
+
+### 实验四：Bean属性赋值：基本类型属性赋值（DI）
+
+### 实验五：基于注解+XML方式整合三层架构组件
+
+详情参考：<https://www.bilibili.com/video/BV1AP411s7D7> P33
 
 ## 四、基于配置类方式管理Bean
 
