@@ -444,7 +444,7 @@
 
 ## 三、基于注解方式管理Bean
 
-### 实验一：Bean注解标记和扫描（IoC）
+### 3.1 实验一：Bean注解标记和扫描（IoC）
 
 #### 3.1.1 注解理解
 
@@ -581,7 +581,7 @@ Spring为了知道程序员在哪些地方标记了什么注解，就需要通�
     }
     ```
 
-### 实验二：组件（Bean）作用域和周期方法注解
+### 3.2 实验二：组件（Bean）作用域和周期方法注解
 
 #### 3.2.1 组件周期方法配置
 
@@ -644,16 +644,113 @@ Spring为了知道程序员在哪些地方标记了什么注解，就需要通�
     }
     ```
 
-### 实验三：Bean属性赋值：引用类型自动装配（DI）
+### 3.3 实验三：Bean属性赋值：引用类型自动装配（DI）
 
-### 实验四：Bean属性赋值：基本类型属性赋值（DI）
+### 3.4 实验四：Bean属性赋值：基本类型属性赋值（DI）
 
-### 实验五：基于注解+XML方式整合三层架构组件
+### 3.5 实验五：基于注解+XML方式整合三层架构组件
 
 详情参考：<https://www.bilibili.com/video/BV1AP411s7D7> P33
 
 ## 四、基于配置类方式管理Bean
 
+### 4.1 完全注解开发概念
+
+![Spring IoC实践5](image/Spring%20IoC%E5%AE%9E%E8%B7%B5/1710741304770.png)  
+
+### 4.2 实验一：配置类和扫描注解
+
+### 4.3 实验二：@Bean定义组件
+
+### 4.4 实验三：高级特性：@Bean注解细节
+
+### 4.5 实验四：高级特性：@Import扩展
+
+### 4.6 实验五：基于注解+配置类方式整合三层架构组件
+
 ## 五、三种配置方式总结
 
+### 5.1 XML配置方式总结
+
+1. 所有内容写到xml格式配置文件中
+2. 声明bean通过\<bean>标签
+3. \<bean>标签包含基本信息（id，class）和属性信息\<property name value / ref>
+4. 引入外部的properties文件可以通过\<context:property-placeholder>标签
+5. IoC具体容器实现选择ClasspathXmlApplicationContext对象
+
+### 5.2 XML + 注解配置方式总结
+
+1. 注解负责标记IoC的类和进行属性装配
+2. xml文件依然需要，需要通过\<context:component-scan>标签指定注解范围
+3. 标记IoC注解：@Component，@Service，@Controller，@Repository
+4. 标记DI注解：@Autowired，@Qualifier，@Resource，@Value
+5. IoC具体容器实现选择ClasspathXmlApplicationContext对象
+
+### 5.3 完全注解方式配置总结
+
+1. 完全注解方式指的是去掉xml文件，使用配置类+注释实现
+2. xml文件替换成使用 @Confinguration 注解标记的类
+3. 标记IoC注解：@Component，@Service，@Controller，@Repository
+4. 标记DI注解：@Autowired，@Qualifier，@Resource，@Value
+5. \<context:component_scan>标签指定注释范围使用 @ComponentScan(basePackage = {“对应包名”})
+6. \<context:property——placeholder>引入外部配置文件使用 @PropertySource({“classpath:application(外部配置名).properties”,“可传入多个外部配置文件...”})>
+7. \<bean>标签使用 @Bean 注解和方法实现
+8. IoC具体容器实现选择AnnotationConfigApplicationContext对象
+
 ## 六、整合Spring5-Test5搭建测试环境
+
+1. 整合测试环境作用
+   * 好处1：不需要自己创建IoC容器对象
+   * 好处2：任何需要的bean都可以在测试类中直接享受自动装配
+
+2. 导入相关依赖
+
+    ```xml
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>6.1.4</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.9.3</version>
+        <scope>test</scope>
+    </dependency>
+    ```
+
+3. 整合测试注解使用
+
+    ```java
+    //类与配置类
+    @Component
+    public class A {
+    }
+
+    @Component
+    public class B {
+    }
+
+    @Configuration
+    @ComponentScan(basePackages = "类路径")
+    public class JavaConfig {
+
+    }
+
+    //junit测试环境
+    @SpringJUnitConfig(value = JavaConfig.class)//自动创建容器，不需要自己创建容器
+    public class SpringIoCTest {
+
+        @Autowired
+        private A a;
+
+        @Autowired
+        private B b;
+
+        @Test
+        public void test(){
+            System.out.println(a+"，"+b);
+        }
+    }
+    ```
