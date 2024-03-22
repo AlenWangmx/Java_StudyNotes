@@ -186,3 +186,13 @@ tyr{
 * 区别
   * 编程式事务需要手动编写代码来管理事务
   * 而声明式事务可以通过配置文件或注解来控制事务
+
+## 六、Spring核心掌握总结
+
+|核心点|掌握目标|
+|-|-|
+|spring框架理解|spring家族和spring framework框架|
+|spring核心功能|ioc/di，aop，tx|
+|sprin ioc/di|组件管理、ioc容器、ioc/di，三种配置方式|
+|spring aop|aop和aop框架和代理技术、基于注解的aop配置|
+|spring tx|声明式和编程式事务、动态事务管理器、事务注解、属性|
