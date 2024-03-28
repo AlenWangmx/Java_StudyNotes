@@ -105,7 +105,7 @@ public class JsonController {
 
 1. Config配置，开启静态资源查找
 
-   访问请求发出后，DispathcherServlet先在HnadlerMapping中查找资源，没有再向DefaultServletHandler查找，通过handleRequest(路径)查找并转发项目内部静态资源
+   访问请求发出后，DispathcherServlet先在HnadlerMapping中查找资源，没有再向DefaultServletHandler查找，通过“handleRequest(路径)”查找并转发项目内部静态资源
 
     ```java
     @EnableWebMvc
